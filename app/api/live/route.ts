@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import Parser from 'rss-parser';
 import { createHash } from 'crypto';
+import * as cheerio from 'cheerio';
 import { feeds } from '@/lib/feeds';
 import type { NewsItem, Lean } from '@/lib/types';
 
@@ -81,6 +82,46 @@ function extractImage(item: any): string | undefined {
   return undefined;
 }
 
+async function fetchOgImage(url: string): Promise<string | undefined> {
+  try {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 4500); // 4.5s timeout
+
+    const res = await fetch(url, {
+      signal: controller.signal,
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (compatible; TheConservativePatriotBot/1.0)',
+      },
+    });
+
+    clearTimeout(timeout);
+
+    if (!res.ok) return undefined;
+
+    const html = await res.text();
+    const $ = cheerio.load(html);
+
+    // Try og:image first (most reliable)
+    let image = $('meta[property="og:image"]').attr('content');
+
+    // Fallback to twitter:image
+    if (!image) {
+      image = $('meta[name="twitter:image"]').attr('content') ||
+              $('meta[property="twitter:image"]').attr('content');
+    }
+
+    // Clean up and return
+    if (image) {
+      // Remove tracking params sometimes added to og:image
+      return image.split('?')[0];
+    }
+
+    return undefined;
+  } catch {
+    return undefined;
+  }
+}
+
 export const revalidate = 300; // 5 minutes ISR
 
 export async function GET() {
@@ -92,20 +133,39 @@ export async function GET() {
     try {
       const feed = await parser.parseURL(feedConfig.url);
 
-      const items = (feed.items || []).slice(0, 25).map((item: any) => {
-        const newsItem: NewsItem = {
-          id: createStableId(item, feedConfig.name),
-          title: item.title?.trim() || 'Untitled',
-          url: item.link || '#',
-          source: feedConfig.name,
-          publishedAt: normalizeDate(item.pubDate || item.isoDate || item.date),
-          lean: feedConfig.lean,
-          summary: extractSummary(item),
-          image: extractImage(item),
-          category: feedConfig.category,
+      const rssItems = (feed.items || []).slice(0, 25);
+
+      // First pass: extract what we can from RSS
+      const itemsWithPossibleMissingImages = rssItems.map((item: any) => {
+        const imageFromRss = extractImage(item);
+        return {
+          raw: item,
+          imageFromRss,
         };
-        return newsItem;
       });
+
+      // Second pass: for items without RSS image, try to fetch og:image
+      const items = await Promise.all(
+        itemsWithPossibleMissingImages.map(async ({ raw, imageFromRss }) => {
+          let finalImage = imageFromRss;
+
+          if (!finalImage && raw.link) {
+            finalImage = await fetchOgImage(raw.link);
+          }
+
+          return {
+            id: createStableId(raw, feedConfig.name),
+            title: raw.title?.trim() || 'Untitled',
+            url: raw.link || '#',
+            source: feedConfig.name,
+            publishedAt: normalizeDate(raw.pubDate || raw.isoDate || raw.date),
+            lean: feedConfig.lean,
+            summary: extractSummary(raw),
+            image: finalImage,
+            category: feedConfig.category,
+          } as NewsItem;
+        })
+      );
 
       return { ok: true as const, items };
     } catch (err: any) {
