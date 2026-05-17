@@ -66,20 +66,25 @@ export default function NewsCard({ item }: NewsCardProps) {
 
   return (
     <div className="news-card group flex flex-col h-full overflow-hidden">
-      {/* Article Thumbnail */}
-      {item.image && (
-        <div className="relative w-full aspect-video bg-[#0F172A] overflow-hidden">
+      {/* Article Thumbnail or Placeholder */}
+      <div className="relative w-full aspect-video bg-[#0F172A] overflow-hidden">
+        {item.image ? (
           <img
             src={item.image}
             alt={item.title}
             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
             onError={(e) => {
-              // Hide image if it fails to load
-              (e.target as HTMLImageElement).style.display = 'none';
+              (e.target as HTMLImageElement).src = '/images/placeholder-news-card.jpg';
             }}
           />
-        </div>
-      )}
+        ) : (
+          <img
+            src="/images/placeholder-news-card.jpg"
+            alt="The Conservative Patriot"
+            className="w-full h-full object-cover opacity-80"
+          />
+        )}
+      </div>
 
       <div className="p-5 flex-1 flex flex-col">
         {/* Header meta */}
