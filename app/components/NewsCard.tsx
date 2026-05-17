@@ -35,15 +35,7 @@ export default function NewsCard({ item }: NewsCardProps) {
     window.open(item.url, '_blank', 'noopener,noreferrer');
   };
 
-  const handleShareToX = (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
 
-    const tweetText = `${item.title} via The Conservative Patriot`;
-    const shareUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(tweetText)}&url=${encodeURIComponent(item.url)}`;
-
-    window.open(shareUrl, '_blank', 'noopener,noreferrer');
-  };
 
   const handleNativeShare = async (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -131,9 +123,11 @@ export default function NewsCard({ item }: NewsCardProps) {
 
         <div className="flex items-center gap-1">
           {/* X.com Share - Custom image */}
-          <button
-            type="button"
-            onClick={handleShareToX}
+          <a
+            href={`https://twitter.com/intent/tweet?text=${encodeURIComponent(`${item.title} via The Conservative Patriot`)}&url=${encodeURIComponent(item.url)}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            onClick={(e) => e.stopPropagation()}
             className="p-2 sm:p-1.5 rounded-lg hover:bg-[#334155] transition-colors active:bg-[#334155] flex items-center justify-center"
             aria-label="Share on X"
             title="Share on X"
@@ -143,7 +137,7 @@ export default function NewsCard({ item }: NewsCardProps) {
               alt="Share on X" 
               className="w-5 h-5 object-contain" 
             />
-          </button>
+          </a>
 
           {/* Copy Link */}
           <button
