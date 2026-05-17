@@ -1,7 +1,7 @@
 "use client";
 
 import React from 'react';
-import { ExternalLink, Copy, Clock } from 'lucide-react';
+import { ExternalLink, Copy, Clock, X } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { toast } from 'sonner';
 import type { NewsItem } from '@/lib/types';
@@ -33,6 +33,35 @@ export default function NewsCard({ item }: NewsCardProps) {
 
   const handleOpen = () => {
     window.open(item.url, '_blank', 'noopener,noreferrer');
+  };
+
+  const handleShareToX = (e: React.MouseEvent) => {
+    e.stopPropagation();
+
+    const text = encodeURIComponent(`${item.title} via The Conservative Patriot`);
+    const url = encodeURIComponent(item.url);
+    const xUrl = `https://x.com/intent/tweet?text=${text}&url=${url}`;
+
+    window.open(xUrl, '_blank', 'noopener,noreferrer');
+  };
+
+  const handleNativeShare = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: item.title,
+          text: `From The Conservative Patriot`,
+          url: item.url,
+        });
+      } catch (error) {
+        // User cancelled or error
+      }
+    } else {
+      // Fallback to copy
+      handleCopy(e);
+    }
   };
 
   return (
@@ -81,13 +110,36 @@ export default function NewsCard({ item }: NewsCardProps) {
         </button>
 
         <div className="flex items-center gap-1">
+          {/* X.com Share */}
+          <button
+            onClick={handleShareToX}
+            className="p-2.5 sm:p-2 rounded-full hover:bg-[#334155] text-[#64748B] hover:text-white transition-colors active:bg-[#334155]"
+            aria-label="Share on X"
+            title="Share on X"
+          >
+            <X className="w-4 h-4" />
+          </button>
+
+          {/* Copy Link */}
           <button
             onClick={handleCopy}
             className="p-2.5 sm:p-2 rounded-full hover:bg-[#334155] text-[#64748B] hover:text-[#CBD5E1] transition-colors active:bg-[#334155]"
             aria-label="Copy link"
+            title="Copy link"
           >
             <Copy className="w-4 h-4" />
           </button>
+
+          {/* Native Share (shows on mobile if supported) */}
+          <button
+            onClick={handleNativeShare}
+            className="p-2.5 sm:p-2 rounded-full hover:bg-[#334155] text-[#64748B] hover:text-[#CBD5E1] transition-colors active:bg-[#334155] md:hidden"
+            aria-label="Share article"
+            title="Share"
+          >
+            <ExternalLink className="w-4 h-4" />
+          </button>
+
           {isVeryRecent && (
             <span className="text-[10px] font-bold tracking-[1px] px-2 py-px rounded bg-[#14B8A6]/10 text-[#14B8A6]">
               BREAKING
