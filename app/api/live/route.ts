@@ -49,10 +49,36 @@ function createStableId(item: any, source: string): string {
 
 function extractSummary(item: any): string | undefined {
   const content = item.contentSnippet || item.summary || item.description || '';
-  // Clean up and truncate
   const clean = content.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
   if (!clean) return undefined;
   return clean.length > 220 ? clean.slice(0, 217) + '...' : clean;
+}
+
+function extractImage(item: any): string | undefined {
+  // Common places RSS feeds put images
+  if (item.enclosure?.url && item.enclosure.type?.startsWith('image')) {
+    return item.enclosure.url;
+  }
+
+  // media:content
+  const mediaContent = item['media:content'];
+  if (mediaContent) {
+    if (Array.isArray(mediaContent)) {
+      const img = mediaContent.find((m: any) => m['$']?.url && m['$']?.medium === 'image');
+      if (img) return img['$'].url;
+    } else if (mediaContent['$']?.url) {
+      return mediaContent['$'].url;
+    }
+  }
+
+  // Try to find first image in description/content
+  const html = item.description || item.content || '';
+  const imgMatch = html.match(/<img[^>]+src=["']([^"']+)["']/i);
+  if (imgMatch && imgMatch[1]) {
+    return imgMatch[1];
+  }
+
+  return undefined;
 }
 
 export const revalidate = 300; // 5 minutes ISR
@@ -75,6 +101,7 @@ export async function GET() {
           publishedAt: normalizeDate(item.pubDate || item.isoDate || item.date),
           lean: feedConfig.lean,
           summary: extractSummary(item),
+          image: extractImage(item),
           category: feedConfig.category,
         };
         return newsItem;

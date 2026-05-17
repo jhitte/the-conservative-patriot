@@ -8,8 +8,9 @@ export interface NewsItem {
   publishedAt: string; // ISO string
   lean: Lean;
   summary?: string;
+  image?: string;
   category?: string;
-  isBreaking?: boolean; // computed client-side for very recent items
+  isBreaking?: boolean;
 }
 
 export interface FeedConfig {
