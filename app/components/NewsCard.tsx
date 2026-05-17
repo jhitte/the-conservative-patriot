@@ -1,7 +1,7 @@
 "use client";
 
 import React from 'react';
-import { ExternalLink, Copy, Clock, X } from 'lucide-react';
+import { ExternalLink, Copy, Clock } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { toast } from 'sonner';
 import type { NewsItem } from '@/lib/types';
@@ -110,14 +110,18 @@ export default function NewsCard({ item }: NewsCardProps) {
         </button>
 
         <div className="flex items-center gap-1">
-          {/* X.com Share */}
+          {/* X.com Share - Custom image */}
           <button
             onClick={handleShareToX}
-            className="p-2.5 sm:p-2 rounded-full hover:bg-[#334155] text-[#64748B] hover:text-white transition-colors active:bg-[#334155]"
+            className="p-2 sm:p-1.5 rounded-lg hover:bg-[#334155] transition-colors active:bg-[#334155] flex items-center justify-center"
             aria-label="Share on X"
             title="Share on X"
           >
-            <X className="w-4 h-4" />
+            <img 
+              src="/icons/x-share-button.png" 
+              alt="Share on X" 
+              className="w-5 h-5 object-contain" 
+            />
           </button>
 
           {/* Copy Link */}
