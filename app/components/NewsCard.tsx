@@ -58,11 +58,11 @@ export default function NewsCard({ item }: NewsCardProps) {
 
   return (
     <div 
-      className="news-card group flex h-[118px] md:h-auto md:flex-col overflow-hidden cursor-pointer active:bg-[#1E2937] md:active:bg-transparent"
+      className="news-card group overflow-hidden cursor-pointer active:bg-[#1E2937] md:active:bg-transparent"
       onClick={handleOpen}
     >
       {/* Thumbnail */}
-      <div className="relative w-[95px] md:w-full h-full md:aspect-video bg-[#0F172A] overflow-hidden flex-shrink-0">
+      <div className="relative w-full aspect-video bg-[#0F172A] overflow-hidden md:aspect-video">
         {item.image ? (
           <img
             src={item.image}
@@ -82,17 +82,17 @@ export default function NewsCard({ item }: NewsCardProps) {
       </div>
 
       {/* Content */}
-      <div className="p-3 md:p-5 flex-1 flex flex-col min-w-0 overflow-hidden">
+      <div className="p-4 md:p-5">
         {/* Meta */}
-        <div className="flex items-center justify-between gap-2 mb-1 text-[10px] md:text-xs">
-          <div className="flex items-center gap-1.5 min-w-0">
-            <span className={`badge ${leanBadgeClass[item.lean]} text-[9px] md:text-[10px]`}>
+        <div className="flex items-center justify-between gap-2 mb-1.5 text-xs md:text-sm">
+          <div className="flex items-center gap-2">
+            <span className={`badge ${leanBadgeClass[item.lean]} text-[10px] md:text-xs`}>
               {item.lean}
             </span>
-            <span className="font-semibold text-[#CBD5E1] truncate text-[10px] md:text-xs">{item.source}</span>
+            <span className="font-semibold text-[#CBD5E1]">{item.source}</span>
           </div>
-          <div className="meta flex items-center gap-1 text-[9px] md:text-[10px] flex-shrink-0">
-            <Clock className="w-2.5 h-2.5 md:w-3 md:h-3" />
+          <div className="meta flex items-center gap-1 text-[10px] md:text-xs">
+            <Clock className="w-3 h-3" />
             {timeAgo}
           </div>
         </div>
@@ -103,14 +103,14 @@ export default function NewsCard({ item }: NewsCardProps) {
           target="_blank"
           rel="noopener noreferrer"
           onClick={(e) => e.stopPropagation()}
-          className="font-semibold text-[13px] md:text-[15px] leading-tight tracking-[-0.01em] hover:text-[#5EEAD4] transition-colors line-clamp-3 md:line-clamp-2 mb-1 flex-1"
+          className="font-semibold text-[14.5px] md:text-[15.5px] leading-snug tracking-[-0.015em] hover:text-[#5EEAD4] transition-colors line-clamp-3 md:line-clamp-2 mb-2 block"
         >
           {item.title}
         </a>
 
-        {/* Summary only on desktop */}
+        {/* Summary - desktop only */}
         {item.summary && (
-          <p className="hidden md:block text-[12.5px] text-[#94A3B8] leading-snug line-clamp-2">
+          <p className="hidden md:block text-[13px] text-[#94A3B8] leading-relaxed line-clamp-2 mb-1">
             {item.summary}
           </p>
         )}
